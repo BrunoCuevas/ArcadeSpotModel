@@ -26,8 +26,9 @@ function final_grill = builtInteractionGrill(nsize, localMatrix)
 					localMatrix_x_tour = floor(localMatrix_y_size/2)	;
 					localMatrix_y_tour = floor(localMatrix_y_size/2)	;
 					% igc will mean 'iterator grill columns'
+					igc_y = 0;
 					for igc = 1 : 1 : nsize ^ 2
-						igc_y = floor(igc/(nsize)) + 1		;
+						igc_y = (mod(igc,nsize) == 1) + igc_y;
 						igc_x = igc - ((igc_y - 1)*nsize)	;
 						temp_vector = zeros(nsize ^ 2 ,1)	;
 						for iy = -localMatrix_y_tour : 1: localMatrix_y_tour
@@ -35,9 +36,6 @@ function final_grill = builtInteractionGrill(nsize, localMatrix)
 								if (igc_y + iy > 0 && igc_y + iy <= nsize) && (igc_x + ix > 0 && igc_x + ix <= nsize)
 									pos_y = (igc_y + iy - 1);
 									pos_x = (igc_x + ix)	;
-									if pos_x > nsize
-										break;
-									end
 									temp_vector((pos_y*nsize) + pos_x) = localMatrix(localMatrix_x_center + ix,localMatrix_y_center + iy);
 								end
 							end
