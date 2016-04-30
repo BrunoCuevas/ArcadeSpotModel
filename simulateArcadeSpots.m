@@ -50,12 +50,7 @@ function report = simulateArcadeSpots (parameters)
 			pathotype_restriction_matrix(:,4) = [0,0,0]';
 			pathotype_restriction_matrix
 
-			genotype_umbral = [];
-			genotype_umbral(1) = 0;
-			genotype_umbral(2) = genotypes(1);
-			genotype_umbral(3) = genotype_umbral(2) + genotypes(2);
-			genotype_umbral(4) = genotype_umbral(3) + genotypes(3);
-			genotype_umbral(5) = 1;
+			
 			% Infection Matrix.
 			M = [69.2, 0, 0 ; 0, 33.8, 0 ; 0, 0, 17.6]/69.2;
 			C = [0, (65.97-69.2), (69.4-69.2); (5.5-33.8), 0, (14.6-33.8); (0.14-17.64) (6.85-17.64) 0]/69.2;
@@ -77,15 +72,8 @@ function report = simulateArcadeSpots (parameters)
 			state = [];
 			for iy = 0 : 1 : nsize - 1
 				for ix = 1 : 1 : nsize
-					genotype_raffle = rand(1);
-					genotype_result = genotype_umbral > genotype_raffle;
 
-
-					genotype_selector = 1;
-					while genotype_result(genotype_selector + 1) == 0
-						genotype_selector = genotype_selector + 1;
-					end
-
+					genotype_selector = genotypes(ix, iy+1);
 					state(1).x((iy * nsize)+ix) = 0		;
 					state(2).x((iy * nsize)+ix) = 0		;
 					state(3).x((iy * nsize)+ix) = 0		;
@@ -136,7 +124,7 @@ function report = simulateArcadeSpots (parameters)
 				for day = 1 : 1 : harvest
 					tic ;
 					disp(['cycle = ', num2str(cycle), ' day = ', num2str(day)]);
-					%pause(1);
+
 					agricultor_mediated_spread = abs(sin(day/periodicity));
 					stochastic_infection_events = rand(nsize^2, 3);
 					focus_radius = floor(day/(2*latence_time)) + 1;
@@ -178,9 +166,6 @@ function report = simulateArcadeSpots (parameters)
 							state(1).A(individual) = alive_or_not;
 							state(2).A(individual) = alive_or_not;
 							state(3).A(individual) = alive_or_not;
-
-
-
 
 							state(1).x(individual) = state(1).x(individual) + (state(1).g(individual) * increase_infection_vector(individual,1)*triple_infection_control);
 							state(2).x(individual) = state(2).x(individual) + (state(2).g(individual) * increase_infection_vector(individual,2)*triple_infection_control);
@@ -286,7 +271,7 @@ function report = simulateArcadeSpots (parameters)
 								focus = s_1;
 								focus_x = s_x;
 								focus_y = s_y;
-								%steps = ((log(steps) - log(8.776)/0.03639)*log(steps/8.776)> 0) +
+
 								focus_list(sampler, 1:2, (((cycle-1)*harvest)+day)) = [focus, steps];
 								for individuals = 1 : 1 : nsize ^2
 									individual_y = (floor(individuals/nsize)) - (mod(individuals,nsize) == 0) + 1;
@@ -302,7 +287,7 @@ function report = simulateArcadeSpots (parameters)
 					hist_infection(((cycle-1)*harvest)+day,1) = sum([state(1).x(:)]);
 					hist_infection(((cycle-1)*harvest)+day,2) = sum([state(2).x(:)]);
 					hist_infection(((cycle-1)*harvest)+day,3) = sum([state(3).x(:)]);
-					addpoints(realtimeplot, (((cycle-1)*harvest)+day), sum([[state(1).x], [state(2).x], [state(3).x]])/3);
+					addpoints(realtimeplot, (((cycle-1)*harvest)+day), sum([[state(1).y], [state(2).y], [state(3).y]])/3);
 					drawnow;
 					max_value	 = max([[state(1).P], [state(2).P], [state(3).P]]);
 					density_picture(:,:,1, ((cycle-1)*harvest)+day) = (reshape([state(1).P(:)], [nsize, nsize])) / max_value;
