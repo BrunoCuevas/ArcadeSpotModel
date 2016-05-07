@@ -1,12 +1,18 @@
-function grill = buildClusteredGenotypeGrill(growdirections, nsize)
+function grill = buildClusteredGenotypeGrill(growdirections, nsize, genotype_freqs)
 	genotypes = [1, 2, 3, 4];
-	grill = 4*ones(nsize, nsize);
+	grill = zeros(nsize, nsize);
 	random_matrix_value = rand(nsize, nsize);
-
-	grill(random_matrix_value(:,:) < 1) = 3;
-	grill(random_matrix_value(:,:) < 0.86) = 2;
-	grill(random_matrix_value(:,:) < 0.75) = 1;
-	grill(random_matrix_value(:,:) < 0.5) = 4;
+	umbral = [];
+	umbral(1) = genotype_freqs(1)*0.1;
+	umbral(2) = genotype_freqs(2)*0.1 + umbral(1);
+	umbral(3) = genotype_freqs(3)*0.1 + umbral(2);
+	umbral(4) = 1*0.1;
+	grill(random_matrix_value(:,:) < umbral(4)) = 4;
+	grill(random_matrix_value(:,:) < umbral(3)) = 3;
+	grill(random_matrix_value(:,:) < umbral(2)) = 2;
+	grill(random_matrix_value(:,:) < umbral(1)) = 1;
+	% return
+	%disp('we havent return')
 	new_cells = find(grill);
 	new_cells = new_cells(randperm(length(new_cells)));
 	old_cells = [];
@@ -42,4 +48,5 @@ function grill = buildClusteredGenotypeGrill(growdirections, nsize)
 		new_cells = new_cells(randperm(length(new_cells)));
 		disp(['growth = ', num2str(length(new_cells))]);
 	end
-	%grill(grill(:,:)==0) = 4;
+
+	grill(grill(:,:)==0) = 4;

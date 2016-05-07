@@ -1,4 +1,4 @@
-function BustrofedonGrill = buildBustrofedonGrill(nsize, constant);
+function bustrofedon_grill = buildBustrofedonGrill(nsize, constant);
 	% Function buildBustrofedonGrill
 	% By Bruno Cuevas, 2016
 	% Usage:
@@ -9,29 +9,56 @@ function BustrofedonGrill = buildBustrofedonGrill(nsize, constant);
 	% FAQ : brunocuevaszuviria@gmail.com
 	%
 	%
-	if isnumeric(nsize) && isnumeric(constant)
-		disp(['building matrix, dimensions ', num2str(nsize), 'x', num2str(nsize)]);
-		linearbustrofedon = [];
+	grill = zeros(nsize, nsize);
+	for iy = 1 : 1 : nsize
 		for ix = 1 : 1 : nsize
-			for iy = 1 : 1 : nsize
-				ik = ((iy-1)*nsize) + ix ;
-				if mod(iy,2) == 1
-					relative_position = ((iy-1)*nsize) + ix ;
+			grill(ix,iy) = ((iy-1)*nsize) + ix;
+		end
+	end
+	bustrofedon_grill = zeros(nsize^2, nsize^2);
+	majorsense = 1;
+	for iter_a = 1 : 1 : nsize ^ 2
+		vector = zeros(nsize^2,1);
+		vector(1) = iter_a;
+		start_pos = find(grill==iter_a);
+		start_y   = floor(start_pos/nsize) - (mod(start_pos, nsize) == 0) + 1;
+		start_x   = start_pos - (start_y - 1) * nsize;
+		column	  = start_y;
+		row 	  = start_x;
+		sense	  = (-1) ^ (-(mod(column, 2)==0));
+		iter	  = 1;
+		door_open = 1;
+		while door_open == 1
+			iter = iter + 1;
+			if start_x + sense > nsize || start_x + sense <= 0
+				if start_y < nsize
+					shift_move_right = 1;
+					shift_move_up	 = 0;
+					sense = -sense;
 				else
-					relative_position = (iy*nsize) - (ix -1);
+					break
 				end
-				linearbustrofedon(ik) = relative_position;
+			else
+				shift_move_right = 0;
+				shift_move_up	= 1;
 			end
-		end
-		BustrofedonGrill = zeros(nsize^2, nsize^2);
-		for ix = 1 : 1 : length(linearbustrofedon);
-			val = 0;
-			for iy = ix : 1 : length(linearbustrofedon)
-				val = val + 1;
-				BustrofedonGrill(linearbustrofedon(iy), ix) = exp(-constant * val);
-			end
-		end
+			start_x = start_x + sense * shift_move_up;
+			start_y = start_y + shift_move_right;
 
-	else
-		disp('ERROR. One of the constants was not numeric.')
+			vector(iter) = grill(start_x , start_y );
+
+			if (start_x + (nsize*(start_y-1))) == nsize^2
+				door_open = 0;
+			end
+
+		end
+		%disp([' VECTOR FOR ', num2str(iter_a), ' | ', num2str(vector')]);
+		dist = 0;
+		for iter = 1 : 1 : length(vector)
+			if not(vector(iter) == 0)
+				dist = dist + 1;
+				bustrofedon_grill(vector(iter),iter_a) = exp(-constant*dist);
+			end
+		end
+		bustrofedon_grill = single(bustrofedon_grill);
 	end

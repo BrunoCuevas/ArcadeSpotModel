@@ -1,4 +1,4 @@
-function genotypegrill = buildGenotypeGrill(argument, size)
+function genotypegrill = buildGenotypeGrill(argument, size, genotype_freqs)
 	% Function buildGenotypeGrill
 	% By Bruno Cuevas, 2016
 	% Usage:
@@ -14,7 +14,12 @@ function genotypegrill = buildGenotypeGrill(argument, size)
 			if strcmp(argument, 'random')
 				disp('Creating a random genotype grill')
 				grill = [];
-				genotype_choicer = [0.60 0.85 0.95 1]
+				genotype_choicer = [] ;
+				genotype_choicer(1) = genotype_freqs(1);
+				genotype_choicer(2) = genotype_freqs(2) + genotype_choicer(1);
+				genotype_choicer(3) = genotype_freqs(3) + genotype_choicer(2);
+				genotype_choicer(4) = 1 ;
+				genotype_choicer
 				for individual = 1 : 1 : size^2
 					genotype_lotery = rand(1);
 					genotype_evaluator = 1 ;
@@ -30,7 +35,12 @@ function genotypegrill = buildGenotypeGrill(argument, size)
 			if strcmp(argument, 'regular')
 				disp('Creating a regular genotype grill')
 				grill = [];
-				genotype_choicer = [6, 2, 1, 1];
+				genotype_choicer = [] ;
+				genotype_choicer(1) = genotype_freqs(1)
+				genotype_choicer(2) = genotype_freqs(2)
+				genotype_choicer(3) = genotype_freqs(3)
+				genotype_choicer(4) = 1 - sum(genotype_choicer);
+				genotype_choicer = floor(genotype_choicer*10);
 				current_genotype = 1;
 				counter = 0;
 				for individual = 1 : 1 : size ^2
@@ -44,7 +54,7 @@ function genotypegrill = buildGenotypeGrill(argument, size)
 							counter = 0;
 						end
 					end
-					
+
 					grill(individual) = current_genotype;
 				end
 				genotypegrill = reshape(grill, [size, size]);

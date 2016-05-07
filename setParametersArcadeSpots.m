@@ -1,16 +1,17 @@
 function parameters = setParametersArcadeSpots()
-	A = [];
-	A(1,:) = [0.001 0.002 0.004 0.008 0.004 0.002 0.001];
-	A(2,:) = [0.002 0.004 0.008 0.016 0.008 0.004 0.002];
-	A(3,:) = [0.004 0.008 0.016 0.160 0.016 0.008 0.004];
-	A(4,:) = [0.008 0.016 0.032 0.000 0.032 0.016 0.008];
-	A(5,:) = [0.004 0.008 0.016 0.160 0.016 0.008 0.004];
-	A(6,:) = [0.002 0.004 0.008 0.016 0.008 0.004 0.002];
-	A(7,:) = [0.001 0.002 0.004 0.008 0.004 0.002 0.001];
-	parameters.H = 180 	;
-	parameters.C = 1	;
-	parameters.N = 50	;
+	% function setParametersArcadeSpots
+	% By Bruno Cuevas, 2016
+	% Usage
+	%		parameters = setParametersArcadeSpots ;
+	%
+	%		It gives some default parameters to run simulations.
+	% For additional information, read documentation
+	% FAQ : brunocuevaszuviria@gmail.com
+	parameters.H  = 180 	;
+	parameters.C  = 1	;
+	parameters.N  = 50	;
 	parameters.BF = buildBustrofedonGrill(50, 0.5);
 	parameters.B  = buildExponentialInteractionGrill(0.5, 0.45, 50);
 	parameters.Pi = 10  ;
 	parameters.G  = buildGenotypeGrill('random', 50);
+	parameters.L  = [10,15,23];
