@@ -1,5 +1,5 @@
-function report = simulateArcadeSpots (parameters, verbose)
-	% function simulateArcadeSpots
+function report = simulateArcadeSpots_print_variation(parameters, verbose)
+	% function simulateArcadeSpots_print_variation
 	% By Bruno Cuevas, 2016
 	% Usage
 	%		rep = simulateArcadeSpots(params, verbose) ;
@@ -12,7 +12,7 @@ function report = simulateArcadeSpots (parameters, verbose)
 	%
 	if isstruct(parameters)
 		% uncomment the following line to make this simulation repeatable
-		%rng 'default';
+		rng 'default';
 		parameters_control = [];
 		parameters_control(1) = isfield(parameters,'B')	;
 		parameters_control(2) = isfield(parameters,'BF');
@@ -62,8 +62,8 @@ function report = simulateArcadeSpots (parameters, verbose)
 
 
 			% Infectivity value-correction Matrix.
-			M = [69.2, 0, 0 ; 0, 33.8, 0 ; 0, 0, 17.6]/69.2;
-			C = [0, 0, 0; (5.5-33.8), 0, (14.6-33.8); (0.14-17.64) (6.85-17.64) 0]/69.2;
+			M = 0.88*[69.2, 0, 0 ; 0, 33.8, 0 ; 0, 0, 17.6]/69.2;
+			C = 0.88*[0, (65.97-69.2), (69.4-69.2); (5.5-33.8), 0, (14.6-33.8); (0.14-17.64) (6.85-17.64) 0]/69.2;
 			% Primary Inoc constants
 			w1 = [1280, 720, 320];
 			%w2 = [2500, 1000, 500];
@@ -94,6 +94,9 @@ function report = simulateArcadeSpots (parameters, verbose)
 					state(1).y((iy * nsize)+ix) = 0		;
 					state(2).y((iy * nsize)+ix) = 0		;
 					state(3).y((iy * nsize)+ix) = 0		;
+					% state(1).hex((iy*nsize)+ix) = ''	;
+					% state(2).hex((iy*nsize)+ix) = ''	;
+					% state(3).hex((iy*nsize)+ix) = ''	;
 					state(1).dpi((iy * nsize)+ix) = 0	;
 					state(2).dpi((iy * nsize)+ix) = 0	;
 					state(3).dpi((iy * nsize)+ix) = 0	;
@@ -113,13 +116,16 @@ function report = simulateArcadeSpots (parameters, verbose)
 				end
 			end
 
-
+			%initial_positions = floor(rand(3,1)*(nsize ^ 2)) + 1;
+			%initial_positions
 			inocs_onplay = find(initial_seeds);
 			for inoc = 1 : 1 : length(inocs_onplay)
 				state(inoc).x(initial_seeds(inoc)) = 1;
+				state(inoc).hex(initial_seeds(inoc),1:6) = 'AAAAAA';
 			end
-
-			% Report Variables
+			%state(1).x(initial_seeds(1)) = 1;
+			%state(2).x(initial_seeds(2)) = 1;
+			%state(3).x(initial_seeds(3)) = 1;
 
 			hist_infection	= [];
 			picture_systemic= [];
@@ -127,10 +133,8 @@ function report = simulateArcadeSpots (parameters, verbose)
 			focus_list = [];
 			density_picture = [];
 			picture_primary_inoc = [];
-
 			betha0 = -(focus_radius/10);
 			betha1 = 0.1;
-
 			if verbose == true
 				disp('Starting simulation');
 				realtimeplot = animatedline([1], [3], 'color', 'r', 'LineWidth', 3/(nsize^2));
@@ -189,13 +193,31 @@ function report = simulateArcadeSpots (parameters, verbose)
 							state(1).A(individual) = alive_or_not;
 							state(2).A(individual) = alive_or_not;
 							state(3).A(individual) = alive_or_not;
-
+							previous_state = state(1).x(individual);
 							state(1).x(individual) = state(1).x(individual) + (state(1).g(individual) * increase_infection_vector(individual,1)*triple_infection_control);
 							state(2).x(individual) = state(2).x(individual) + (state(2).g(individual) * increase_infection_vector(individual,2)*triple_infection_control);
 							state(3).x(individual) = state(3).x(individual) + (state(3).g(individual) * increase_infection_vector(individual,3)*triple_infection_control);
 							state(1).omega(individual) = state(1).omega(individual) + systemic_infection_matrix(individual,1)*w1(1);
 							state(2).omega(individual) = state(2).omega(individual) + systemic_infection_matrix(individual,2)*w1(2);
 							state(3).omega(individual) = state(3).omega(individual) + systemic_infection_matrix(individual,3)*w1(3);
+							if state(1).x(individual) >= 1 && previous_state < 1;
+
+								local_interaction_vector = interaction_grill(individual, :) + bustrofedon_grill(individual, : );
+								local_interaction_vector = local_interaction_vector.*systemic_infection_matrix(:,1)';
+
+								major_characters = find(local_interaction_vector==max(local_interaction_vector));
+								if length(major_characters) == 1
+									disp([' individual = ', num2str(individual), ' major character = ', num2str(major_characters)]);
+									disp(['     major character hexacode = ', state(1).hex(major_characters, 1:6)]);
+									state(1).hex(individual,:) = state(1).hex(major_characters,:);
+
+								else
+									major_major_character = datasample(major_characters, 1);
+									state(1).hex(individual,:) = state(1).hex(major_major_character,:);
+								end
+
+
+							end
 
 
 						else
@@ -208,9 +230,9 @@ function report = simulateArcadeSpots (parameters, verbose)
 					end
 
 
-					[state(1).x([state(1).x(:)] < 1 )] = [state(1).A(state(1).x(:)<1)]'.*[state(1).g(state(1).x(:)<1)]'.*(rand(length(state(1).x([state(1).x(:)] < 1)),1) < [state(1).P([state(1).x(:)] < 1)]') + [state(1).x([state(1).x(:)] < 1 )]';
-					[state(2).x([state(2).x(:)] < 1 )] = [state(2).A(state(2).x(:)<1)]'.*[state(2).g(state(2).x(:)<1)]'.*(rand(length(state(2).x([state(2).x(:)] < 1)),1) < [state(2).P([state(2).x(:)] < 1)]') + [state(2).x([state(2).x(:)] < 1 )]';
-					[state(3).x([state(3).x(:)] < 1 )] = [state(3).A(state(3).x(:)<1)]'.*[state(3).g(state(3).x(:)<1)]'.*(rand(length(state(3).x([state(3).x(:)] < 1)),1) < [state(3).P([state(3).x(:)] < 1)]') + [state(3).x([state(3).x(:)] < 1 )]';
+					%[state(1).x([state(1).x(:)] < 1 )] = [state(1).A(state(1).x(:)<1)]'.*[state(1).g(state(1).x(:)<1)]'.*(rand(length(state(1).x([state(1).x(:)] < 1)),1) < [state(1).P([state(1).x(:)] < 1)]') + [state(1).x([state(1).x(:)] < 1 )]';
+					%[state(2).x([state(2).x(:)] < 1 )] = [state(2).A(state(2).x(:)<1)]'.*[state(2).g(state(2).x(:)<1)]'.*(rand(length(state(2).x([state(2).x(:)] < 1)),1) < [state(2).P([state(2).x(:)] < 1)]') + [state(2).x([state(2).x(:)] < 1 )]';
+					%[state(3).x([state(3).x(:)] < 1 )] = [state(3).A(state(3).x(:)<1)]'.*[state(3).g(state(3).x(:)<1)]'.*(rand(length(state(3).x([state(3).x(:)] < 1)),1) < [state(3).P([state(3).x(:)] < 1)]') + [state(3).x([state(3).x(:)] < 1 )]';
 
 
 					[state(1).x([state(1).x(:)] > 1)] = 1;
@@ -353,8 +375,11 @@ function report = simulateArcadeSpots (parameters, verbose)
 										door_open = (rand(1) > probability_walk_ending);
 
 									end
+									if picture_systemic(s_x, s_y) == 0
+										door_open = false;
+									end
 								end
-								focus = s_1;
+								focus = s_0;
 								focus_x = s_x;
 								focus_y = s_y;
 
@@ -363,19 +388,26 @@ function report = simulateArcadeSpots (parameters, verbose)
 									individual_y = (floor(individuals/nsize)) - (mod(individuals,nsize) == 0) + 1;
 									individual_x = (individuals -((individual_y-1)*nsize));
 									dist = sqrt(0.5*((individual_y -focus_y)^2) + ((individual_x - focus_x) ^2));
-									state(pathotype).P(individuals) = (1/sample_size) * (steps/1e5) * (exp(-0.05*log(steps)*dist)) + state(pathotype).P(individuals);
+									state(pathotype).P(individuals) = (1/sample_size) * (steps/1e5) * (exp(-0.05*log(steps)*dist));
+									if state(pathotype).x(individuals) < 1
+										rx = rand(1) < state(pathotype).P(individuals);
+										if rx == 1
+											state(pathotype).x(individuals) = 1;
+											new_seq = state(pathotype).hex(s_1,:);
+											new_seq(datasample([1,2,3,4,5,6],1)) = datasample(['ABCDEFGHIJKLMNOPQRSTUVWXYZ'],1);
+											state(pathotype).hex(individuals,:) = new_seq;
+
+										end
+									end
 								end
 							end
 						end
 					end
 
 
-					hist_infection(((cycle-1)*harvest)+day,1) = sum([state(1).y(:)]);
-					hist_infection(((cycle-1)*harvest)+day,2) = sum([state(2).y(:)]);
-					hist_infection(((cycle-1)*harvest)+day,3) = sum([state(3).y(:)]);
-					hist_infection(((cycle-1)*harvest)+day,4) = sum([state(1).y(:)]);
-					hist_infection(((cycle-1)*harvest)+day,5) = sum([state(2).y(:)]);
-					hist_infection(((cycle-1)*harvest)+day,6) = sum([state(3).y(:)]);
+					hist_infection(((cycle-1)*harvest)+day,1) = sum([state(1).x(:)]);
+					hist_infection(((cycle-1)*harvest)+day,2) = sum([state(2).x(:)]);
+					hist_infection(((cycle-1)*harvest)+day,3) = sum([state(3).x(:)]);
 					if verbose == true
 						addpoints(realtimeplot, (((cycle-1)*harvest)+day), sum([[state(1).y], [state(2).y], [state(3).y]])/3);
 						drawnow;
@@ -421,6 +453,7 @@ function report = simulateArcadeSpots (parameters, verbose)
 					end
 				end
 			end
+			report.hexacodes_global = [state(1).hex(:,1:6)];
 			report.hist_infection = hist_infection;
 			report.pathotype_composition = int8([[state(1).g(:)] [state(2).g(:)] [state(3).g(:)]]);
 			report.picture = picture_systemic;
