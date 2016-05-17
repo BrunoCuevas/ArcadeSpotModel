@@ -32,5 +32,5 @@ for iter = 1 : 1 : 10
 		report_library(pariter).senescence_picture = report.senescence_picture;
 
 	end
-	save([simulations_main_name, '_', num2str(iter)],'report_library');
+	%save([simulations_main_name, '_', num2str(iter)],'report_library');
 end
